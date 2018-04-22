@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="veiwport" content="width=device-width,user-scalable=no"/>
+<style></style>
+</head>
+<body></body>
+</html>
+<script type="text/javascript">
+var data=JSON.stringify({
+	name:'lisi',
+	age:'34'
+});
+
+function ajax(config){
+	var defaultOption={type:'get',contentType:'application/x-www-form-urlencoded',url:'',async:true};
+	var setting=Object.assign(defaultOption,config);
+	var xhr=null;
+	if(window.XMLHttpRequest){
+	    xhr=new XMLHttpRequest();
+	}else{
+		xhr=new ActiveXObject('Microsoft.XMLHTTP');
+	}
+	xhr.onreadystatechange=function(){
+		if(xhr.readyState==4&&xhr.status==200){
+			setting.success&&setting.success(xhr.responseText);
+		}else{
+			setting.error&&setting.error(null);
+		}
+	}
+	if(setting.type.toLowerCase()=='post'){
+		xhr.open(setting.type,setting.url,setting.async);
+		xhr.setRequestHeader('content-type',setting.contentType);
+		xhr.send(setting.data);
+	}else{
+		setting.url+= '?' + data;
+		xhr.open(setting.type,setting.url,setting.async);
+        xhr.send();
+	}
+
+}
+
+ajax({
+	type:'post',
+	url:'/serverTest/ajax.php',
+	data:data,
+	contentType:'application/json',
+	success:function(date){
+		document.getElementsByTagName('body')[0].innerHTML=date;
+        console.log(date);
+	},
+	error:function(msg){
+		document.getElementsByTagName('body')[0].innerHTML=msg;
+        console.log(msg);
+	}
+});
+
+</script>
+
+
+
+
+
