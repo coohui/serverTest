@@ -8,9 +8,10 @@
 <body></body>
 </html>
 <script type="text/javascript">
-function ajax(config){
-	var defaultOption={type:'get',contentType:'application/x-www-form-urlencoded',url:'',async:true};
-	var setting=Object.assign(defaultOption,config);
+function ajax(setting){
+	setting.type=setting.type||'get';
+	setting.contentType=setting.contentType||'application/x-www-form-urlencoded';
+	setting.async=setting.async||true;
 	var xhr=null;
 	if(window.XMLHttpRequest){
 	    xhr=new XMLHttpRequest();
@@ -33,7 +34,6 @@ function ajax(config){
 		xhr.open(setting.type,setting.url,setting.async);
         xhr.send();
 	}
-
 }
 //post方式
 var data=JSON.stringify({
