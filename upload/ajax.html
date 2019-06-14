@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="veiwport" content="width=device-width,user-scalable=no"/>
+<style></style>
+</head>
+<body>
+	<input type="file" id="fileId" name="fileName">
+	<div id="showResult"></div>
+</body>
+</html>
+<script type="text/javascript">
+function ajax(setting){
+	setting.type=setting.type||'get';
+	// setting.contentType=setting.contentType||'application/x-www-form-urlencoded';
+	setting.contentType='multipart/form-data'
+	setting.async=setting.async||true;
+	var xhr=null;
+	if(window.XMLHttpRequest){
+	    xhr=new XMLHttpRequest();
+	}else{
+		xhr=new ActiveXObject('Microsoft.XMLHTTP');
+	}
+	xhr.onreadystatechange=function(){
+		if(xhr.readyState==4&&xhr.status==200){
+			setting.success&&setting.success(xhr.responseText);
+		}else{
+			setting.error&&setting.error(null);
+		}
+	}
+	if(setting.type.toLowerCase()=='post'){
+		xhr.open(setting.type,setting.url,setting.async);
+		xhr.setRequestHeader('content-type',setting.contentType);
+		xhr.send(setting.data);
+	}else{
+		setting.url+= '?' + setting.data;
+		xhr.open(setting.type,setting.url,setting.async);
+        xhr.send();
+	}
+}
+
+function getFile(){
+	let fileId = document.getElementById('fileId')
+    fileId.onchange = function(e) {
+    	console.log(e.target.files[0])
+    	let file = e.target.files[0]
+		compressImg(file).then(res => {
+	      let form = new FormData()
+	      console.log('res',res)
+	      form.append('file', res.file)
+	      // form.append('type', 2)
+	      // form.append('file_type', res.file_type)
+			ajax({
+				type:'post',
+				url:'/upload/ajax.php',
+				data:form,
+				contentType:'multipart/form-data',
+				success:function(date){
+					document.getElementById('showResult').innerHTML=date;
+			        console.log(date);
+				},
+				error:function(msg){
+					document.getElementById('showResult').innerHTML=msg;
+			        console.log(msg);
+				}
+			})
+	     })
+    }  
+}
+getFile()
+//post方式
+// var data=JSON.stringify({
+// 	name:'lisi',
+// 	age:'34'
+// });
+// ajax({
+// 	type:'post',
+// 	url:'/upload/ajax.php',
+// 	data:data,
+// 	contentType:'application/json',
+// 	success:function(date){
+// 		document.getElementById('showResult').innerHTML=date;
+//         console.log(date);
+// 	},
+// 	error:function(msg){
+// 		document.getElementById('showResult').innerHTML=msg;
+//         console.log(msg);
+// 	}
+// });
+
+const compressImg = (file, maxSize) => { // 压缩图片方法
+  return new Promise((resolve, reject) => {
+    try {
+      // 压缩图片需要的一些元素和对象
+      let reader = new FileReader(), img = new Image()
+
+      // 缩放图片需要的canvas
+      let canvas = document.createElement('canvas')
+      let context = canvas.getContext('2d')
+      let data = {file_type: 0}
+
+      // 文件base64化，以便获知图片原始尺寸
+      reader.onload = function (e) {
+        img.src = e.target.result
+      }
+      reader.readAsDataURL(file)
+      // base64地址图片加载完毕后
+      img.onload = function () {
+        // 图片原始尺寸
+        let originWidth = this.width
+        let originHeight = this.height
+
+        // 最大尺寸限制
+        let diyScale = 1000
+        let maxWidth = diyScale
+        let maxHeight = diyScale
+
+        // 目标尺寸
+        let targetWidth = originWidth
+        let targetHeight = originHeight
+
+        maxSize = (maxSize || 2) * 1024 * 1024 // 图片压缩完成后大小建议
+        // 图片尺寸超过 diyScale x diyScale 的限制
+        if (originWidth > maxWidth || originHeight > maxHeight || 1) {
+          if (originWidth / originHeight > maxWidth / maxHeight) {
+            // 更宽，按照宽度限定尺寸
+            targetWidth = maxWidth
+            targetHeight = Math.round(maxWidth * (originHeight / originWidth))
+          } else {
+            targetHeight = maxHeight
+            targetWidth = Math.round(maxHeight * (originWidth / originHeight))
+          }
+          // canvas对图片进行缩放
+          canvas.width = targetWidth
+          canvas.height = targetHeight
+          // 清除画布
+          context.clearRect(0, 0, targetWidth, targetHeight)
+          // 图片压缩，用canvas的drawImage重绘
+          context.drawImage(img, 0, 0, targetWidth, targetHeight)
+          canvas.toBlob((blob) => {
+              var a = new FileReader()
+              blob.lastModifiedDate = new Date();
+              blob.name = file.name
+              a.readAsDataURL(blob)
+              a.onload = function (e){
+                console.log('result', e.target.result);
+                console.log(blob)
+                resolve({file: blob, file_type: data.file_type})
+              };
+            })
+          // let newbase64 = canvas.toDataURL(file.type) // 将canvas转化成为base64，方便将base64通过以下dataURLtoFile方法装成file文件
+          // data = dataURLtoFile(newbase64, file.name)
+          // file = data.file
+        }
+        // file.size > maxSize ? reject('fileSizeBeyond') : resolve({file: file, file_type: data.file_type})
+      }
+    } catch (err) {
+      reject(err)
+    }
+  })
+}
+</script>
+
+
+
+
+
