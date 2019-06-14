@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+  <head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="renderer" content="webkit">
+    <meta HTTP-EQUIV="pragma" CONTENT="no-cache">
+    <meta HTTP-EQUIV="Cache-Control" CONTENT="no-cache, must-revalidate">
+    <meta HTTP-EQUIV="expires" CONTENT="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
+<!--     <link rel="stylesheet" type="text/css" href="../common/css/main.css">
+<link rel="stylesheet" type="text/css" href="css/down.css">
+<script type="text/javascript" src="../../../assets/seajs/dist/sea_dse.js"></script>
+<script type="text/javascript" src="../../../config/seajs-config.js"></script>
+<script type="text/javascript" src="js/downPage.js"></script> 
+<style type="text/css" id="autoSize"></style>  -->
+  </head>
+<body>
+<!--修改详情内容-->
+  <div class="g-wrap">
+    <div id="a1" data-filename="1.docx">下载</div>
+    <div id="progressing"></div>
+  </div>
+  <script type="text/javascript">
+        $('#a1').click(function () {
+            var that = this;
+            var page_url = 'http://10.100.9.61:9030/info/qshStatController/testDown.do';
+            var req = new XMLHttpRequest();
+            req.open("POST",page_url,true);
+            //监听进度事件
+            req.addEventListener("progress", function (evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded/evt.total;
+                    console.log(percentComplete);
+                    $("#progressing").html((percentComplete * 100) + "%");
+                }
+            },false);
+
+            req.responseType = "blob";
+            req.onreadystatechange = function () {
+                if (req.readyState === 4 && req.status === 200) {
+                    var filename = $(that).data('filename');
+                    if (typeof window.chrome !== 'undefined') {
+                        // Chrome version
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(req.response);
+                        link.download = filename;
+                        link.click();
+                    } else if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                        // IE version
+                    var blob = new Blob([req.response], { type: 'application/force-download' });
+                        window.navigator.msSaveBlob(blob, filename);
+                    } else {
+                        // Firefox version
+                        var file = new File([req.response], filename, { type: 'application/force-download' });
+                        window.open(URL.createObjectURL(file));
+                    }
+                }
+            };
+            req.send();
+        });
+  </script>
+</body>
+</html>
