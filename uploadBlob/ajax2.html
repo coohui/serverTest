@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="veiwport" content="width=device-width,user-scalable=no"/>
+<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+<style></style>
+</head>
+<body>
+	<input type="file" id="fileId" name="fileName">
+	<div id="showResult"></div>
+</body>
+</html>
+<script type="text/javascript">
+function getFile(){
+	let fileId = document.getElementById('fileId');
+  fileId.onchange = function(e) {
+  	console.log(e.target.files[0]);
+  	let file = e.target.files[0];
+    let formData = new FormData();
+    console.log(file);
+    formData.append('type', 9999);
+    formData.append('file', file);
+    formData.append('blob', new Blob(['Hello World!'], {type: 'text/plain'}));
+    $.ajax(
+      {
+        type: 'POST',
+        url: '/upload/ajax.php',  // 同目录下的php文件
+        data:formData,
+        dataType:'json', // 声明成功使用json数据类型回调
+        // 如果传递的是FormData数据类型，那么下来的三个参数是必须的，否则会报错
+        cache:false,  // 默认是true，但是一般不做缓存
+        // 用于对data参数进行序列化处理，这里必须false；如果是true，就会将FormData转换为String类型
+        processData:false, 
+        contentType:false,  // 一些文件上传http协议的关系，自行百度，如果上传的有文件，那么只能设置为false
+        success: function(msg){ // 请求成功后的回调函数
+          $("#showResult").append("type:" + msg.type + '-file:' + msg.file + '-blob:' + msg.blob);
+        }
+      }
+    )
+  }  
+}
+getFile()
+</script>
+
+
+
+
+
